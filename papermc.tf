@@ -50,7 +50,7 @@ resource "azurerm_network_security_group" "papermc_nsg" {
     access                     = "Allow"
     protocol                   = "*"
     source_port_range          = "*"
-    destination_port_range     = ["22", "80", "443"]
+    destination_port_ranges    = ["22", "80", "443"]
     source_address_prefix      = var.source_ip
     destination_address_prefix = "*"
   }
