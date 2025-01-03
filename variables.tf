@@ -3,19 +3,9 @@ variable "resource_group_location" {
   description = "Location of the resource group."
 }
 
-variable "resource_group_name" {
-  default     = "mcraft"
-  description = "Resource group name."
-}
-
-variable "prefix" {
+variable "target_group_name" {
   default     = "papermc"
-  description = "Prefix for resource names."
-}
-
-variable "domain_name_label" {
-  default     = "bcmcraft"
-  description = "Domain name label for the public IP."
+  description = "Resource group name."
 }
 
 variable "username" {
@@ -30,9 +20,4 @@ variable "public_key" {
 
 variable "source_ip" {
   description = "The IP to access the new VM."
-}
-
-variable "data_disk_size_gb" {
-  default     = 32
-  description = "Size of the data disk in GB"
 }

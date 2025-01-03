@@ -1,45 +1,27 @@
 resource "azurerm_resource_group" "rg" {
   location = var.resource_group_location
-  name     = var.resource_group_name
-}
-
-resource "azurerm_virtual_network" "papermc_vnet" {
-  name                = "${var.prefix}-vnet"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  address_space       = ["10.0.0.0/16"]
-}
-
-resource "azurerm_subnet" "papermc_subnet" {
-  name                 = "${var.prefix}-subnet"
-  resource_group_name  = azurerm_resource_group.rg.name
-  virtual_network_name = azurerm_virtual_network.papermc_vnet.name
-  address_prefixes     = ["10.0.2.0/24"]
-}
-
-resource "azurerm_public_ip" "pip_papermc" {
-  name                = "${var.prefix}-pulic-ip"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  allocation_method   = "Static"
-  sku                 = "Standard"
-  domain_name_label   = var.domain_name_label
+  name     = var.target_group_name
 }
 
 resource "azurerm_network_interface" "papermc_nic" {
-  name                = "${var.prefix}-nic"
+  name                = "${var.target_group_name}-nic"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   ip_configuration {
-    name                          = "internal"
-    subnet_id                     = azurerm_subnet.papermc_subnet.id
+    name                          = "${var.target_group_name}-nic-ip-conf"
+    subnet_id                     = azurerm_subnet.subnet_papermc.id
     private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.pip_papermc.id
   }
 }
 
+resource "azurerm_network_interface_backend_address_pool_association" "papermc_nic_inbound" {
+  network_interface_id  = azurerm_network_interface.papermc_nic.id
+  ip_configuration_name =  azurerm_network_interface.papermc_nic.ip_configuration[0].name
+  backend_address_pool_id = azurerm_lb_backend_address_pool.lb_pool_papermc.id
+}
+
 resource "azurerm_network_security_group" "papermc_nsg" {
-  name                = "${var.prefix}-nsg"
+  name                = "${var.target_group_name}-nsg"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
 
@@ -75,7 +57,7 @@ resource "azurerm_network_interface_security_group_association" "papermc_nsg_ass
 }
 
 resource "azurerm_virtual_machine" "papermc_vm" {
-  name                          = var.prefix
+  name                          = var.target_group_name
   location                      = azurerm_resource_group.rg.location
   resource_group_name           = azurerm_resource_group.rg.name
   network_interface_ids         = [azurerm_network_interface.papermc_nic.id]
@@ -89,7 +71,7 @@ resource "azurerm_virtual_machine" "papermc_vm" {
   }
 
   storage_os_disk {
-    name              = "${var.prefix}_os-disk_${formatdate("YYYYMMDDhhmmss", timestamp())}"
+    name              = "${var.target_group_name}-os-disk"
     caching           = "ReadWrite"
     create_option     = "FromImage"
     managed_disk_type = "StandardSSD_LRS"
@@ -103,7 +85,7 @@ resource "azurerm_virtual_machine" "papermc_vm" {
   }
 
   os_profile {
-    computer_name  = var.prefix
+    computer_name  = var.target_group_name
     admin_username = var.username
     custom_data = base64encode(<<-EOF
       #!/bin/bash
@@ -179,22 +161,8 @@ resource "azurerm_virtual_machine" "papermc_vm" {
   }
 }
 
-resource "azurerm_managed_disk" "papermc_data_disk" {
-  name                 = "${var.prefix}-data-disk"
-  location             = azurerm_resource_group.rg.location
-  resource_group_name  = azurerm_resource_group.rg.name
-  storage_account_type = "StandardSSD_LRS"
-  create_option        = "Empty"
-  disk_size_gb         = var.data_disk_size_gb
-
-  # This prevents the disk from being deleted when you destroy other resources
-  lifecycle {
-    prevent_destroy = true
-  }
-}
-
 resource "azurerm_virtual_machine_data_disk_attachment" "papermc_disk_attachment" {
-  managed_disk_id    = azurerm_managed_disk.papermc_data_disk.id
+  managed_disk_id    = azurerm_managed_disk.disk1.id
   virtual_machine_id = azurerm_virtual_machine.papermc_vm.id
   lun                = "10"
   caching            = "ReadWrite"
