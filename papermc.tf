@@ -15,8 +15,8 @@ resource "azurerm_network_interface" "papermc_nic" {
 }
 
 resource "azurerm_network_interface_backend_address_pool_association" "papermc_nic_inbound" {
-  network_interface_id  = azurerm_network_interface.papermc_nic.id
-  ip_configuration_name =  azurerm_network_interface.papermc_nic.ip_configuration[0].name
+  network_interface_id    = azurerm_network_interface.papermc_nic.id
+  ip_configuration_name   = azurerm_network_interface.papermc_nic.ip_configuration[0].name
   backend_address_pool_id = azurerm_lb_backend_address_pool.lb_pool_papermc.id
 }
 
@@ -65,9 +65,9 @@ resource "azurerm_virtual_machine" "papermc_vm" {
   delete_os_disk_on_termination = true
 
   plan {
-    name      = "8-base"
     publisher = "resf"
     product   = "rockylinux-x86_64"
+    name      = "9-base"
   }
 
   storage_os_disk {
@@ -80,7 +80,7 @@ resource "azurerm_virtual_machine" "papermc_vm" {
   storage_image_reference {
     publisher = "resf"
     offer     = "rockylinux-x86_64"
-    sku       = "8-base"
+    sku       = "9-base"
     version   = "latest"
   }
 
