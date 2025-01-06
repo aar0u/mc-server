@@ -89,7 +89,10 @@ resource "azurerm_virtual_machine" "papermc_vm" {
     admin_username = var.username
     custom_data = base64encode(<<-EOF
       #!/bin/bash
-      sudo dnf install tmux java-21-openjdk tree -y
+      sudo timedatectl set-timezone Asia/Singapore
+
+      sudo dnf install -y tmux java-21-openjdk tree epel-release
+      sudo dnf install -y htop
 
       DISK="/dev/sdb"
       MOUNT_POINT="/mnt/newdisk"
@@ -146,8 +149,10 @@ resource "azurerm_virtual_machine" "papermc_vm" {
       )" C-m
       EOL
 
+      echo "cd /mnt/newdisk && tar -czvf paper-backup-\$(date +"%Y%m%d-%H%M").tar.gz mc-server/paper-*.jar mc-server/eula.txt mc-server/server.properties mc-server/ops.json mc-server/plugins/*.jar mc-server/world/" > /home/${var.username}/backup.sh
+
       # Make run.sh executable
-      chmod +x /home/${var.username}/run.sh
+      chmod +x /home/${var.username}/run.sh /home/${var.username}/backup.sh
     EOF
     )
   }
