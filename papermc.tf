@@ -61,14 +61,9 @@ resource "azurerm_virtual_machine" "papermc_vm" {
   location                      = azurerm_resource_group.rg.location
   resource_group_name           = azurerm_resource_group.rg.name
   network_interface_ids         = [azurerm_network_interface.papermc_nic.id]
-  vm_size                       = "Standard_B2ls_v2"
+  vm_size                       = "Standard_B2pls_v2"
   delete_os_disk_on_termination = true
-
-  plan {
-    publisher = "resf"
-    product   = "rockylinux-x86_64"
-    name      = "9-base"
-  }
+  # zones = [ 1 ]
 
   storage_os_disk {
     name              = "${var.target_group_name}-os-disk"
@@ -78,9 +73,9 @@ resource "azurerm_virtual_machine" "papermc_vm" {
   }
 
   storage_image_reference {
-    publisher = "resf"
-    offer     = "rockylinux-x86_64"
-    sku       = "9-base"
+    publisher = "Canonical"
+    offer     = "ubuntu-24_04-lts"
+    sku       = "minimal-arm64"
     version   = "latest"
   }
 
@@ -91,8 +86,8 @@ resource "azurerm_virtual_machine" "papermc_vm" {
       #!/bin/bash
       sudo timedatectl set-timezone Asia/Singapore
 
-      sudo dnf install -y tmux java-21-openjdk tree epel-release
-      sudo dnf install -y htop
+      sudo apt-get update
+      sudo apt-get install -y tmux htop openjdk-21-jre-headless
 
       DISK="/dev/sdb"
       MOUNT_POINT="/mnt/newdisk"
