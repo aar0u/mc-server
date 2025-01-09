@@ -87,7 +87,7 @@ resource "azurerm_virtual_machine" "papermc_vm" {
       sudo timedatectl set-timezone Asia/Singapore
 
       sudo apt-get update
-      sudo apt-get install -y tmux htop openjdk-21-jre-headless
+      sudo apt-get install -y tmux openjdk-21-jre-headless
 
       DISK="/dev/sdb"
       MOUNT_POINT="/mnt/newdisk"
@@ -144,7 +144,7 @@ resource "azurerm_virtual_machine" "papermc_vm" {
       )" C-m
       EOL
 
-      echo "cd /mnt/newdisk && tar -czvf paper-backup-\$(date +"%Y%m%d-%H%M").tar.gz mc-server/paper-*.jar mc-server/eula.txt mc-server/server.properties mc-server/ops.json mc-server/plugins/*.jar mc-server/world/" > /home/${var.username}/backup.sh
+      echo "cd /mnt/newdisk && tar -czvf paper-backup-\$(date +"%Y%m%d-%H%M").tar.gz mc-server/paper-*.jar mc-server/eula.txt mc-server/server.properties mc-server/ops.json mc-server/plugins/*.jar mc-server/plugins/GriefPreventionData/ClaimData/ mc-server/world/" > /home/${var.username}/backup.sh
 
       # Make run.sh executable
       chmod +x /home/${var.username}/run.sh /home/${var.username}/backup.sh
